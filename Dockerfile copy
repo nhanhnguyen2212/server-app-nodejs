@@ -1,0 +1,45 @@
+# FROM --platform=linux/amd64 public.ecr.aws/docker/library/node:lts-alpine3.19
+
+# FROM --platform=linux/arm64 node:18
+
+# FROM public.ecr.aws/docker/library/node:lts-alpine3.19
+# FROM --platform=linux/arm64 public.ecr.aws/docker/library/node:lts-alpine3.19 
+FROM --platform=linux/amd64 node:20
+
+# FROM public.ecr.aws/docker/library/node:18
+
+#configure working directory
+
+WORKDIR /app 
+
+RUN apt-get update && apt-get install -y iputils-ping
+
+RUN mkdir -p /app/data
+
+RUN mkdir -p /app/cache
+
+COPY package*.json /app/
+
+RUN npm install
+
+#bundle app source code
+# java
+#RUN apt install default-jdk
+#RUN apt search openjdk*
+RUN apt install openjdk-17-jdk
+
+# install kafka
+RUN useradd -m -d /home/kafka -s /bin/bash kafka
+RUN cd ~home/kafka
+RUN wget https://dlcdn.apache.org/kafka/3.7.1/kafka_2.13-3.7.1.tgz
+RUN tar -xzf kafka_2.13-3.7.1.tgz
+# start Kafka with ZooKeeper
+
+RUN bin/zookeeper-server-start.sh config/zookeeper.properties
+
+
+
+COPY . ./
+
+EXPOSE 8080 
+CMD ["npm", "start"]
